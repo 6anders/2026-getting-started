@@ -8,66 +8,28 @@ const errorDiv = document.getElementById("errorMessage");
 
 const btnRestart = document.getElementById("btnRestart");
 
+const spanWins = document.getElementById("winCount");
+const spanLosses = document.getElementById("lossCount");
+const spanElo = document.getElementById("eloCount");
+const spanGuess = document.getElementById("guessCount");
+
+const gameModeSelect = document.getElementById(
+  "gameModes",
+) as HTMLSelectElement | null;
+
 let game = new GuessingGame(10, 3);
 
-let minGuess = 1;
-let maxGuess = 10;
-
-let gameState = {
+let gameHistory = {
+  wins: 0,
+  losses: 0,
   guesses: 3,
-  remainingGuesses: 3,
-  playerWon: false,
-  isGameOver: false,
+
+  maxRange: 10,
+
+  elo: function () {
+    return Math.max(this.wins - this.losses, 0) * 10;
+  },
 };
-
-//move to class
-function checkAnswer(guess: number): void {
-  const userMessageDiv = document.getElementById("userMessage");
-  gameState.remainingGuesses -= 1;
-
-  if (guess == secretNumber) {
-    userMessageDiv!.innerText = "You won!";
-    gameState.playerWon = true;
-    gameState.isGameOver = true;
-  } else if (guess < secretNumber) {
-    userMessageDiv!.innerText = `${guess} is too low!`;
-  } else {
-    userMessageDiv!.innerText = `${guess} is too high!`;
-  }
-
-  if (!gameState.playerWon && gameState.remainingGuesses == 0) {
-    //no win and out of guesses
-    userMessageDiv!.innerText = `You lose! The secret number was ${secretNumber}...`;
-    gameState.isGameOver = true;
-  }
-}
-
-// move to class
-function validateGuess(guess: number | null): boolean {
-  const errorDiv = document.getElementById("errorMessage");
-
-  if (errorDiv == null) {
-    // something wrong in the code
-    console.error("errorDiv is null here! We broke something.");
-    return true;
-  }
-
-  if (guess == null) {
-    errorDiv!.innerText = "Please enter a number";
-    return false;
-  }
-
-  if (guess < minGuess || guess > maxGuess) {
-    errorDiv!.innerText = `Please enter a number between ${minGuess} and ${maxGuess}`;
-    return false;
-  }
-  if (!Number.isInteger(guess)) {
-    errorDiv!.innerText = "Please enter a whole number";
-    return false;
-  }
-
-  return true;
-}
 
 // leave  here
 function handleAnswerClick() {
@@ -85,15 +47,24 @@ function handleAnswerClick() {
     userMessageDiv!.innerText = result.message;
   }
 
-  console.log("Answer clicked!", game.secret, answer);
-}
+  if (game.isGameOver) {
+    if (game.playerWon) {
+      gameHistory.wins += 1;
+    } else {
+      gameHistory.losses += 1;
+    }
 
-//already is done in class
-function getSecretNumber(maxNumber: number = 10): number {
-  let r = Math.random();
-  r = r * maxNumber + 1;
-  r = Math.floor(r);
-  return r;
+    
+
+    spanElo!.innerText = gameHistory.elo().toString();
+
+    spanWins!.innerText = gameHistory.wins.toString();
+    spanLosses!.innerText = gameHistory.losses.toString();
+  }
+
+  spanGuess!.innerText = game.remainingGuesses.toString()
+
+  console.log("Answer clicked!", game.secret, answer);
 }
 
 // leave here
@@ -117,19 +88,51 @@ function getUserAnswer(): number | null {
   return answer;
 }
 
-//handled in our class
-let secretNumber = getSecretNumber();
-
-let userAnswer = 0;
-
 btnAnswer?.addEventListener("click", handleAnswerClick);
 
 function resetGame(): void {
-  game = new GuessingGame(10, 3);
 
   userMessageDiv!.innerText = "";
   errorDiv!.innerText = "";
 
   console.log("Game has been reset. New instance created!");
+
+  createGame();
+
+  spanGuess!.innerText = game.remainingGuesses.toString();
 }
 btnRestart?.addEventListener("click", resetGame);
+
+function handleGameModeChange() {
+  const mode = gameModeSelect!.value;
+
+  let range = 10;
+  let guesses = 3;
+
+  switch (mode) {
+    case "level 2":
+      range = 50;
+      guesses = 5;
+      break;
+    case "level 3":
+      range = 100;
+      guesses = 10;
+      break;
+    case "level 4":
+      range = 150;
+      guesses = 12;
+      break;
+  }
+  gameHistory.guesses = guesses
+  gameHistory.maxRange = range
+
+  createGame();
+  spanGuess!.innerText = game.remainingGuesses.toString();
+
+  userMessageDiv!.innerText = `New game started with ${guesses} guesses and a range of 1-${range}`;
+}
+gameModeSelect?.addEventListener("change", handleGameModeChange);
+
+function createGame() {
+  game = new GuessingGame(gameHistory.maxRange, gameHistory.guesses)
+}

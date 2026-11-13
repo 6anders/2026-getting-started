@@ -8,7 +8,7 @@ export class GuessingGame {
   readonly secret: number;
 
   readonly lastGuess: number = 0;
-  private remainingGuesses: number;
+  remainingGuesses: number;
 
   playerWon: boolean = false;
   isGameOver: boolean = false;

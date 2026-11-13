@@ -9,6 +9,23 @@
   <body>
     <div id="app"></div>
 
+    <div style="font-size: larger;">
+      Wins: <span id="winCount">0</span>
+      Losses: <span id="lossCount">0</span>
+      <br> Guesses: <span id="guessCount">3</span>
+      <br> Elo: <span id="eloCount">0</span>
+    </div>
+
+    <label for="gameModes">Game modes:</label>
+
+<select name="gameModes" id="gameModes">
+  <option value="level 1">3 Guesses | Range 1-10</option>
+  <option value="level 2">5 guesses | Range 1-50</option>
+  <option value="level 3">10 Guesses | Range 1-100</option>
+  <option value="level 4">12 Guesses | Range 1-150</option>
+</select>
+
+
     <div>
       <label for="userAnswer">Enter a number</label>
       <input type="number" name="user-answer" id="userAnswer">
